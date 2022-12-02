@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "Compile Test",
+      "setup": "",
+      "run": "make",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 5,
+      "points": 10
+    },
+    {
+      "name": "QS H_try",
+      "setup": "make a.out",
+      "run": "./a.out ",
+      "input":"quick-Hoare 15 30 10",
+      "comparison": "included",
+      "timeout": 1200,
+      "points": 90
+    }
+  ]
+}
