@@ -45,8 +45,8 @@ int main() {
         }
         double addAvrgSpendTime = addTotalSpendTime / repeat;
         double searchAvrgSpendTime = searchTotalSpendTime / repeat;
-        cout << endl << "B Tree新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
-        cout << endl << "在存了2^" << k << "筆資料的B Tree中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
+        cout << endl << "HashTable新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
+        cout << endl << "在存了2^" << k << "筆資料的HashTable中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
     }
 
 }
