@@ -11,10 +11,10 @@
       "points": 10
     },
     {
-      "name": "QS H_try",
+      "name": "Hash Table first_try",
       "setup": "make a.out",
       "run": "./a.out ",
-      "input":"quick-Hoare 15 30 10",
+      "input":"10 30 500",
       "comparison": "included",
       "timeout": 1200,
       "points": 90
