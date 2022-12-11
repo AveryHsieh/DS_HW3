@@ -8,7 +8,7 @@ using namespace std;
 
 
 //HashTableTest
-void main() {
+int main() {
     srand(time(NULL));
 
     int start, end, repeat;
