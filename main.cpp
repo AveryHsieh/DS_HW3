@@ -1,191 +1,194 @@
+#pragma warning( disable : 4996 )
+// C++ program to demonstrate search, insert and delete in Treap
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <cmath>
 #include <iostream>
 #include <unordered_set>
+
+//#include <bits/stdc++.h>
 using namespace std;
 
-
-/*
- * C++ Program to Implement Skip List
- */
-
-#include <cstdlib>
-#include <cmath>
-#include <cstring>
-#define MAX_LEVEL 30
-const float P = 0.5;
-using namespace std;
-/*
- * Skip Node Declaration
- */
-struct snode
+// A Treap Node
+struct TreapNode
 {
-    int value;
-    snode** forw;
-    snode(int level, int& value)
-    {
-        forw = new snode * [level + 1];
-        memset(forw, 0, sizeof(snode*) * (level + 1));
-        this->value = value;
-    }
-    ~snode()
-    {
-        delete[] forw;
-    }
-};
-/*
- * Skip List Declaration
- */
-struct skiplist
-{
-    snode* header;
-    int value;
-    int level;
-    skiplist()
-    {
-        header = new snode(MAX_LEVEL, value);
-        level = 0;
-    }
-    ~skiplist()
-    {
-        delete header;
-    }
-    void display();
-    bool contains(int&);
-    void insert_element(int&);
-    void delete_element(int&);
+    int key, priority;
+    TreapNode* left, * right;
 };
 
-/*
- * Random Value Generator
- */
-float frand()
+/* T1, T2 and T3 are subtrees of the tree rooted with y
+  (on left side) or x (on right side)
+                y                               x
+               / \     Right Rotation          /  \
+              x   T3   – – – – – – – >        T1   y
+             / \       < - - - - - - -            / \
+            T1  T2     Left Rotation            T2  T3 */
+
+            // A utility function to right rotate subtree rooted with y
+            // See the diagram given above.
+TreapNode* rightRotate(TreapNode* y)
 {
-    return (float)rand() / RAND_MAX;
+    TreapNode* x = y->left, * T2 = x->right;
+
+    // Perform rotation
+    x->right = y;
+    y->left = T2;
+
+    // Return new root
+    return x;
 }
 
-/*
- * Random Level Generator
- */
-int random_level()
+// A utility function to left rotate subtree rooted with x
+// See the diagram given above.
+TreapNode* leftRotate(TreapNode* x)
 {
-    static bool first = true;
-    if (first)
-    {
-        srand((unsigned)time(NULL));
-        first = false;
-    }
-    int lvl = (int)(log(frand()) / log(1. - P));
-    return lvl < MAX_LEVEL ? lvl : MAX_LEVEL;
+    TreapNode* y = x->right, * T2 = y->left;
+
+    // Perform rotation
+    y->left = x;
+    x->right = T2;
+
+    // Return new root
+    return y;
 }
 
-/*
- * Insert Element in Skip List
- */
-void skiplist::insert_element(int& value)
+/* Utility function to add a new key */
+TreapNode* newNode(int key)
 {
-    snode* x = header;
-    snode* update[MAX_LEVEL + 1];
-    memset(update, 0, sizeof(snode*) * (MAX_LEVEL + 1));
-    for (int i = level; i >= 0; i--)
+    TreapNode* temp = new TreapNode;
+    temp->key = key;
+    temp->priority = rand() % 100;
+    temp->left = temp->right = NULL;
+    return temp;
+}
+
+// C function to search a given key in a given BST
+TreapNode* search(TreapNode* root, int key)
+{
+    // Base Cases: root is null or key is present at root
+    if (root == NULL || root->key == key)
+        return root;
+
+    // Key is greater than root's key
+    if (root->key < key)
+        return search(root->right, key);
+
+    // Key is smaller than root's key
+    return search(root->left, key);
+}
+
+/* Recursive implementation of insertion in Treap */
+TreapNode* insert(TreapNode* root, int key)
+{
+    // If root is NULL, create a new node and return it
+    if (!root)
+        return newNode(key);
+
+    // If key is smaller than root
+    if (key <= root->key)
     {
-        while (x->forw[i] != NULL && x->forw[i]->value < value)
-        {
-            x = x->forw[i];
-        }
-        update[i] = x;
+        // Insert in left subtree
+        root->left = insert(root->left, key);
+
+        // Fix Heap property if it is violated
+        if (root->left->priority > root->priority)
+            root = rightRotate(root);
     }
-    x = x->forw[0];
-    if (x == NULL || x->value != value)
+    else  // If key is greater
     {
-        int lvl = random_level();
-        if (lvl > level)
-        {
-            for (int i = level + 1; i <= lvl; i++)
-            {
-                update[i] = header;
-            }
-            level = lvl;
-        }
-        x = new snode(lvl, value);
-        for (int i = 0; i <= lvl; i++)
-        {
-            x->forw[i] = update[i]->forw[i];
-            update[i]->forw[i] = x;
-        }
+        // Insert in right subtree
+        root->right = insert(root->right, key);
+
+        // Fix Heap property if it is violated
+        if (root->right->priority > root->priority)
+            root = leftRotate(root);
+    }
+    return root;
+}
+
+/* Recursive implementation of Delete() */
+TreapNode* deleteNode(TreapNode* root, int key)
+{
+    if (root == NULL)
+        return root;
+
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+
+    // IF KEY IS AT ROOT
+
+    // If left is NULL
+    else if (root->left == NULL)
+    {
+        TreapNode* temp = root->right;
+        delete(root);
+        root = temp;  // Make right child as root
+    }
+
+    // If Right is NULL
+    else if (root->right == NULL)
+    {
+        TreapNode* temp = root->left;
+        delete(root);
+        root = temp;  // Make left child as root
+    }
+
+    // If key is at root and both left and right are not NULL
+    else if (root->left->priority < root->right->priority)
+    {
+        root = leftRotate(root);
+        root->left = deleteNode(root->left, key);
+    }
+    else
+    {
+        root = rightRotate(root);
+        root->right = deleteNode(root->right, key);
+    }
+
+    return root;
+}
+
+// A utility function to print tree
+void inorder(TreapNode* root)
+{
+    if (root)
+    {
+        inorder(root->left);
+        cout << "key: " << root->key << " | priority: %d "
+            << root->priority;
+        if (root->left)
+            cout << " | left child: " << root->left->key;
+        if (root->right)
+            cout << " | right child: " << root->right->key;
+        cout << endl;
+        inorder(root->right);
     }
 }
 
-/*
- * Delete Element from Skip List
- */
-void skiplist::delete_element(int& value)
-{
-    snode* x = header;
-    snode* update[MAX_LEVEL + 1];
-    memset(update, 0, sizeof(snode*) * (MAX_LEVEL + 1));
-    for (int i = level; i >= 0; i--)
-    {
-        while (x->forw[i] != NULL && x->forw[i]->value < value)
-        {
-            x = x->forw[i];
-        }
-        update[i] = x;
-    }
-    x = x->forw[0];
-    if (x->value == value)
-    {
-        for (int i = 0; i <= level; i++)
-        {
-            if (update[i]->forw[i] != x)
-                break;
-            update[i]->forw[i] = x->forw[i];
-        }
-        delete x;
-        while (level > 0 && header->forw[level] == NULL)
-        {
-            level--;
-        }
-    }
-}
 
-/*
- * Display Elements of Skip List
- */
-void skiplist::display()
+// Driver Program to test above functions
+int example()
 {
-    const snode* x = header->forw[0];
-    while (x != NULL)
-    {
-        cout << x->value;
-        x = x->forw[0];
-        if (x != NULL)
-            cout << " - ";
-    }
-    cout << endl;
-}
+    srand(time(NULL));
 
-/*
- * Search Elemets in Skip List
- */
-bool skiplist::contains(int& s_value)
-{
-    snode* x = header;
-    for (int i = level; i >= 0; i--)
-    {
-        while (x->forw[i] != NULL && x->forw[i]->value < s_value)
-        {
-            x = x->forw[i];
-        }
-    }
-    x = x->forw[0];
-    return x != NULL && x->value == s_value;
+    struct TreapNode* root = NULL;
+    root = insert(root, 50);
+
+
+
+    TreapNode* res = search(root, 50);
+    (res == NULL) ? cout << "\n50 Not Found " :
+        cout << "\n50 found";
+
+    return 0;
 }
 
 
-//Skip List Test
+//Treap Test
 int main() {
     srand(time(NULL));
 
@@ -199,14 +202,16 @@ int main() {
         double searchTotalSpendTime = 0;
         for (int n = 0; n < repeat; n++)
         {
-            skiplist mySkipList;//initial Skip List
+            struct TreapNode* root = NULL;//initial Treap
+
             double START, END;
             START = clock();
+
             for (int i = 0; i < pow(2, k); i++)
             {
-                int randnum = rand() % 1073741824 + 1;
-                mySkipList.insert_element(randnum);//update Skip List
+                root = insert(root, rand() % 1073741824 + 1);//update Treap
             }
+
             END = clock();
 
             addTotalSpendTime += ((END - START) / CLOCKS_PER_SEC);
@@ -217,16 +222,15 @@ int main() {
             int sum = 0;
             for (int i = 0; i < pow(10, 5); i++)
             {
-                int randnum = rand() % 1073741824 + 1;
-                mySkipList.contains(randnum);//search in Skip List
+                search(root, rand() % 1073741824 + 1);//search in Treap
             }
             search_END = clock();
             searchTotalSpendTime += ((search_END - search_START) / CLOCKS_PER_SEC);
         }
         double addAvrgSpendTime = addTotalSpendTime / repeat;
         double searchAvrgSpendTime = searchTotalSpendTime / repeat;
-        cout << endl << "Skip List新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
-        cout << endl << "在存了2^" << k << "筆資料的Skip List中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
+        cout << endl << "Treap新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
+        cout << endl << "在存了2^" << k << "筆資料的Treap中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
     }
     return 0;
 }
