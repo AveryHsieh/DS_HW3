@@ -205,8 +205,7 @@ int main() {
             for (int i = 0; i < pow(2, k); i++)
             {
                 int randnum = rand() % 1073741824 + 1;
-                if(!mySkipList.contains(randnum))
-                    mySkipList.insert_element(randnum);//update Skip List
+                mySkipList.insert_element(randnum);//update Skip List
             }
             END = clock();
 
