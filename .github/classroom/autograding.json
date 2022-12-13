@@ -11,7 +11,7 @@
       "points": 10
     },
     {
-      "name": "Treap",
+      "name": "B+Tree",
       "setup": "make a.out",
       "run": "./a.out ",
       "input":"10 30 1",
