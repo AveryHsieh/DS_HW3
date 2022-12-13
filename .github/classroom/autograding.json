@@ -14,7 +14,7 @@
       "name": "B+Tree",
       "setup": "make a.out",
       "run": "./a.out ",
-      "input":"10 30 1",
+      "input":"10 30 50",
       "comparison": "included",
       "timeout": 1200,
       "points": 90
