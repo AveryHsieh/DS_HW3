@@ -1,9 +1,3 @@
-
-struct TreapNode* root = NULL; //產生一個空的Treap
-root = insert(root, 1); //新增數字1
-search(root, 1); //搜尋數字1
-
-實驗程式碼
 #pragma warning( disable : 4996 )
 // C++ program to demonstrate search, insert and delete in Treap
 
