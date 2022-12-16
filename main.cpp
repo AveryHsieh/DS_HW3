@@ -1,286 +1,191 @@
+
 #include <iostream>
-#include <stdlib.h>
+#include <string>
 #include <vector>
-#include <list>
 #include <cmath>
-#include <time.h>
-//#include <conio.h>
-#include <unordered_map>
-
-using namespace std;
-
-
-// Searching on a B+ tree in C++
-
-#include <climits>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 using namespace std;
-//int MAX = 3;
-#define MAX 3
 
-// BP node
-class Node {
-    bool IS_LEAF;
-    int* key, size;
-    Node** ptr;
-    friend class BPTree;
 
-public:
-    Node();
+/*
+ * C++ Program to Implement Skip List
+ */
+
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+#define MAX_LEVEL 30
+const float P = 0.5;
+using namespace std;
+/*
+ * Skip Node Declaration
+ */
+struct snode
+{
+    int value;
+    snode** forw;
+    snode(int level, int& value)
+    {
+        forw = new snode * [level + 1];
+        memset(forw, 0, sizeof(snode*) * (level + 1));
+        this->value = value;
+    }
+    ~snode()
+    {
+        delete[] forw;
+    }
+};
+/*
+ * Skip List Declaration
+ */
+struct skiplist
+{
+    snode* header;
+    int value;
+    int level;
+    skiplist()
+    {
+        header = new snode(MAX_LEVEL, value);
+        level = 0;
+    }
+    ~skiplist()
+    {
+        delete header;
+    }
+    void display();
+    bool contains(int&);
+    void insert_element(int&);
+    void delete_element(int&);
 };
 
-// BP tree
-class BPTree {
-    Node* root;
-    void insertInternal(int, Node*, Node*);
-    Node* findParent(Node*, Node*);
-
-public:
-    BPTree();
-    void search(int);
-    void insert(int);
-    void display(Node*);
-    Node* getRoot();
-};
-
-Node::Node() {
-    key = new int[MAX];
-    ptr = new Node * [MAX + 1];
+/*
+ * Random Value Generator
+ */
+float frand()
+{
+    return (float)rand() / RAND_MAX;
 }
 
-BPTree::BPTree() {
-    root = NULL;
+/*
+ * Random Level Generator
+ */
+int random_level()
+{
+    static bool first = true;
+    if (first)
+    {
+        srand((unsigned)time(NULL));
+        first = false;
+    }
+    int lvl = (int)(log(frand()) / log(1. - P));
+    return lvl < MAX_LEVEL ? lvl : MAX_LEVEL;
 }
 
-// Search operation
-void BPTree::search(int x) {
-    if (root == NULL) {
-        //cout << "Tree is empty\n";
+/*
+ * Insert Element in Skip List
+ */
+void skiplist::insert_element(int& value)
+{
+    snode* x = header;
+    snode* update[MAX_LEVEL + 1];
+    memset(update, 0, sizeof(snode*) * (MAX_LEVEL + 1));
+    for (int i = level; i >= 0; i--)
+    {
+        while (x->forw[i] != NULL && x->forw[i]->value < value)
+        {
+            x = x->forw[i];
+        }
+        update[i] = x;
     }
-    else {
-        Node* cursor = root;
-        while (cursor->IS_LEAF == false) {
-            for (int i = 0; i < cursor->size; i++) {
-                if (x < cursor->key[i]) {
-                    cursor = cursor->ptr[i];
-                    break;
-                }
-                if (i == cursor->size - 1) {
-                    cursor = cursor->ptr[i + 1];
-                    break;
-                }
+    x = x->forw[0];
+    if (x == NULL || x->value != value)
+    {
+        int lvl = random_level();
+        if (lvl > level)
+        {
+            for (int i = level + 1; i <= lvl; i++)
+            {
+                update[i] = header;
             }
+            level = lvl;
         }
-        for (int i = 0; i < cursor->size; i++) {
-            if (cursor->key[i] == x) {
-                //cout << "Found\n";
-                return;
-            }
-        }
-        //cout << "Not found\n";
-    }
-}
-
-// Insert Operation
-void BPTree::insert(int x) {
-    if (root == NULL) {
-        root = new Node;
-        root->key[0] = x;
-        root->IS_LEAF = true;
-        root->size = 1;
-    }
-    else {
-        Node* cursor = root;
-        Node* parent = NULL;
-        while (cursor->IS_LEAF == false) {
-            parent = cursor;
-            for (int i = 0; i < cursor->size; i++) {
-                if (x < cursor->key[i]) {
-                    cursor = cursor->ptr[i];
-                    break;
-                }
-                if (i == cursor->size - 1) {
-                    cursor = cursor->ptr[i + 1];
-                    break;
-                }
-            }
-        }
-        if (cursor->size < MAX) {
-            int i = 0;
-            while (x > cursor->key[i] && i < cursor->size)
-                i++;
-            for (int j = cursor->size; j > i; j--) {
-                cursor->key[j] = cursor->key[j - 1];
-            }
-            cursor->key[i] = x;
-            cursor->size++;
-            cursor->ptr[cursor->size] = cursor->ptr[cursor->size - 1];
-            cursor->ptr[cursor->size - 1] = NULL;
-        }
-        else {
-            Node* newLeaf = new Node;
-            int virtualNode[MAX + 1];
-            for (int i = 0; i < MAX; i++) {
-                virtualNode[i] = cursor->key[i];
-            }
-            int i = 0, j;
-            while (x > virtualNode[i] && i < MAX)
-                i++;
-            for (int j = MAX + 1; j > i; j--) {
-                virtualNode[j] = virtualNode[j - 1];
-            }
-            virtualNode[i] = x;
-            newLeaf->IS_LEAF = true;
-            cursor->size = (MAX + 1) / 2;
-            newLeaf->size = MAX + 1 - (MAX + 1) / 2;
-            cursor->ptr[cursor->size] = newLeaf;
-            newLeaf->ptr[newLeaf->size] = cursor->ptr[MAX];
-            cursor->ptr[MAX] = NULL;
-            for (i = 0; i < cursor->size; i++) {
-                cursor->key[i] = virtualNode[i];
-            }
-            for (i = 0, j = cursor->size; i < newLeaf->size; i++, j++) {
-                newLeaf->key[i] = virtualNode[j];
-            }
-            if (cursor == root) {
-                Node* newRoot = new Node;
-                newRoot->key[0] = newLeaf->key[0];
-                newRoot->ptr[0] = cursor;
-                newRoot->ptr[1] = newLeaf;
-                newRoot->IS_LEAF = false;
-                newRoot->size = 1;
-                root = newRoot;
-            }
-            else {
-                insertInternal(newLeaf->key[0], parent, newLeaf);
-            }
+        x = new snode(lvl, value);
+        for (int i = 0; i <= lvl; i++)
+        {
+            x->forw[i] = update[i]->forw[i];
+            update[i]->forw[i] = x;
         }
     }
 }
 
-// Insert Operation
-void BPTree::insertInternal(int x, Node* cursor, Node* child) {
-    if (cursor->size < MAX) {
-        int i = 0;
-        while (x > cursor->key[i] && i < cursor->size)
-            i++;
-        for (int j = cursor->size; j > i; j--) {
-            cursor->key[j] = cursor->key[j - 1];
+/*
+ * Delete Element from Skip List
+ */
+void skiplist::delete_element(int& value)
+{
+    snode* x = header;
+    snode* update[MAX_LEVEL + 1];
+    memset(update, 0, sizeof(snode*) * (MAX_LEVEL + 1));
+    for (int i = level; i >= 0; i--)
+    {
+        while (x->forw[i] != NULL && x->forw[i]->value < value)
+        {
+            x = x->forw[i];
         }
-        for (int j = cursor->size + 1; j > i + 1; j--) {
-            cursor->ptr[j] = cursor->ptr[j - 1];
-        }
-        cursor->key[i] = x;
-        cursor->size++;
-        cursor->ptr[i + 1] = child;
+        update[i] = x;
     }
-    else {
-        Node* newInternal = new Node;
-        int virtualKey[MAX + 1];
-        Node* virtualPtr[MAX + 2];
-        for (int i = 0; i < MAX; i++) {
-            virtualKey[i] = cursor->key[i];
+    x = x->forw[0];
+    if (x->value == value)
+    {
+        for (int i = 0; i <= level; i++)
+        {
+            if (update[i]->forw[i] != x)
+                break;
+            update[i]->forw[i] = x->forw[i];
         }
-        for (int i = 0; i < MAX + 1; i++) {
-            virtualPtr[i] = cursor->ptr[i];
-        }
-        int i = 0, j;
-        while (x > virtualKey[i] && i < MAX)
-            i++;
-        for (int j = MAX + 1; j > i; j--) {
-            virtualKey[j] = virtualKey[j - 1];
-        }
-        virtualKey[i] = x;
-        for (int j = MAX + 2; j > i + 1; j--) {
-            virtualPtr[j] = virtualPtr[j - 1];
-        }
-        virtualPtr[i + 1] = child;
-        newInternal->IS_LEAF = false;
-        cursor->size = (MAX + 1) / 2;
-        newInternal->size = MAX - (MAX + 1) / 2;
-        for (i = 0, j = cursor->size + 1; i < newInternal->size; i++, j++) {
-            newInternal->key[i] = virtualKey[j];
-        }
-        for (i = 0, j = cursor->size + 1; i < newInternal->size + 1; i++, j++) {
-            newInternal->ptr[i] = virtualPtr[j];
-        }
-        if (cursor == root) {
-            Node* newRoot = new Node;
-            newRoot->key[0] = cursor->key[cursor->size];
-            newRoot->ptr[0] = cursor;
-            newRoot->ptr[1] = newInternal;
-            newRoot->IS_LEAF = false;
-            newRoot->size = 1;
-            root = newRoot;
-        }
-        else {
-            insertInternal(cursor->key[cursor->size], findParent(root, cursor), newInternal);
+        delete x;
+        while (level > 0 && header->forw[level] == NULL)
+        {
+            level--;
         }
     }
 }
 
-// Find the parent
-Node* BPTree::findParent(Node* cursor, Node* child) {
-    Node* parent;
-    if (cursor->IS_LEAF || (cursor->ptr[0])->IS_LEAF) {
-        return NULL;
+/*
+ * Display Elements of Skip List
+ */
+void skiplist::display()
+{
+    const snode* x = header->forw[0];
+    while (x != NULL)
+    {
+        cout << x->value;
+        x = x->forw[0];
+        if (x != NULL)
+            cout << " - ";
     }
-    for (int i = 0; i < cursor->size + 1; i++) {
-        if (cursor->ptr[i] == child) {
-            parent = cursor;
-            return parent;
-        }
-        else {
-            parent = findParent(cursor->ptr[i], child);
-            if (parent != NULL)
-                return parent;
-        }
-    }
-    return NULL;
+    cout << endl;
 }
 
-// Print the tree
-void BPTree::display(Node* cursor) {
-    if (cursor != NULL) {
-        for (int i = 0; i < cursor->size; i++) {
-            cout << cursor->key[i] << " ";
-        }
-        cout << "\n";
-        if (cursor->IS_LEAF != true) {
-            for (int i = 0; i < cursor->size + 1; i++) {
-                display(cursor->ptr[i]);
-            }
+/*
+ * Search Elemets in Skip List
+ */
+bool skiplist::contains(int& s_value)
+{
+    snode* x = header;
+    for (int i = level; i >= 0; i--)
+    {
+        while (x->forw[i] != NULL && x->forw[i]->value < s_value)
+        {
+            x = x->forw[i];
         }
     }
-}
-
-// Get the root
-Node* BPTree::getRoot() {
-    return root;
-}
-
-int example() {
-    BPTree node;
-    node.insert(5);
-    node.insert(15);
-    node.insert(25);
-    node.insert(35);
-    node.insert(45);
-    node.insert(55);
-    node.insert(40);
-    node.insert(30);
-    node.insert(20);
-    node.display(node.getRoot());
-
-    node.search(15);
-    return 0;
+    x = x->forw[0];
+    return x != NULL && x->value == s_value;
 }
 
 
-
-//B+ Tree Test
+//Skip List Test
 int main() {
     srand(time(NULL));
 
@@ -294,16 +199,16 @@ int main() {
         double searchTotalSpendTime = 0;
         for (int n = 0; n < repeat; n++)
         {
-            BPTree node;//initial B+ Tree
-
+            skiplist mySkipList;//initial Skip List
             double START, END;
             START = clock();
-
             for (int i = 0; i < pow(2, k); i++)
             {
-                node.insert(rand() % 1073741824 + 1);//update B+ Tree
-            }
+                int randnum = rand() % 1073741824 + 1;
+                if (!mySkipList.contains(randnum));
+                    mySkipList.insert_element(randnum);//update Skip List
 
+            }
             END = clock();
 
             addTotalSpendTime += ((END - START) / CLOCKS_PER_SEC);
@@ -314,15 +219,17 @@ int main() {
             int sum = 0;
             for (int i = 0; i < pow(10, 5); i++)
             {
-                node.search(rand() % 1073741824 + 1);//search in B+ Tree
+                int randnum = rand() % 1073741824 + 1;
+                mySkipList.contains(randnum);//search in Skip List
             }
             search_END = clock();
             searchTotalSpendTime += ((search_END - search_START) / CLOCKS_PER_SEC);
         }
         double addAvrgSpendTime = addTotalSpendTime / repeat;
         double searchAvrgSpendTime = searchTotalSpendTime / repeat;
-        cout << endl << "B+ Tree新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
-        cout << endl << "在存了2^" << k << "筆資料的B+ Tree中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
+        cout << endl << "Skip List新增2^" << k << "個隨機數所需的時間:" << addAvrgSpendTime << " sec" << endl;
+        cout << endl << "在存了2^" << k << "筆資料的Skip List中搜尋十萬筆資料所需的時間:" << searchAvrgSpendTime << " sec" << endl << endl;
     }
     return 0;
 }
+

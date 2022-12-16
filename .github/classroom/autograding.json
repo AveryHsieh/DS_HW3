@@ -11,10 +11,10 @@
       "points": 10
     },
     {
-      "name": "B+Tree",
+      "name": "Skip List",
       "setup": "make a.out",
       "run": "./a.out ",
-      "input":"10 30 50",
+      "input":"10 30 25",
       "comparison": "included",
       "timeout": 1200,
       "points": 90
