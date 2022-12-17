@@ -11,7 +11,7 @@
       "points": 10
     },
     {
-      "name": "Treap 25",
+      "name": "Hash Table 25",
       "setup": "make a.out",
       "run": "./a.out ",
       "input":"10 30 25",
