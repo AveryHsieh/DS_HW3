@@ -11,10 +11,10 @@
       "points": 10
     },
     {
-      "name": "Hash Table 25(28 29 30)",
+      "name": "Hash Table 25",
       "setup": "make a.out",
       "run": "./a.out ",
-      "input":"28 30 25",
+      "input":"10 30 25",
       "comparison": "included",
       "timeout": 1200,
       "points": 90

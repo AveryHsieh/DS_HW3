@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -42,6 +43,7 @@ int main() {
             }
             search_END = clock();
             searchTotalSpendTime += ((search_END - search_START) / CLOCKS_PER_SEC);
+            myHashTable.clear();
         }
         double addAvrgSpendTime = addTotalSpendTime / repeat;
         double searchAvrgSpendTime = searchTotalSpendTime / repeat;
