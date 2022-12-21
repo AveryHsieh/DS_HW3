@@ -50,13 +50,13 @@ void ArrayOfSortedArrays::Insert(int num) {
 }
 
 bool ArrayOfSortedArrays::Search(int num) {
-
+    bool flag=false;
 	for (const auto& array : arrays_) {
 		// 從長度為2^0的array開始，對每個array使用二分搜尋
 		if (binary_search(array.begin(), array.end(), num))
-			return true;	//有找到即結束搜尋並回傳true
+			flag= true;	
 	}
-	return false;	//全部找完都沒有，回傳false
+	return flag;	//回傳結果
 }
 
 void ArrayOfSortedArrays::Print() {
