@@ -11,10 +11,10 @@
       "points": 10
     },
     {
-      "name": "Array of Sorted Arrays 3",
+      "name": "Array of Sorted Arrays 25",
       "setup": "make a.out",
       "run": "./a.out ",
-      "input":"10 30 1",
+      "input":"10 30 25",
       "comparison": "included",
       "timeout": 1200,
       "points": 90
