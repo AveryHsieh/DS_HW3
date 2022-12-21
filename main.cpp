@@ -3,6 +3,9 @@
 #include <list>
 #include <stdlib.h>
 #include <algorithm>
+#include <string>
+#include <cmath>
+
 using namespace std;
 
 
