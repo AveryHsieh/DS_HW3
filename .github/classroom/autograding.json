@@ -11,7 +11,7 @@
       "points": 10
     },
     {
-      "name": "Array of Sorted Arrays 1",
+      "name": "Array of Sorted Arrays 3",
       "setup": "make a.out",
       "run": "./a.out ",
       "input":"10 30 1",
